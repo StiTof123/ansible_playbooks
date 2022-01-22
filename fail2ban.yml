@@ -1,0 +1,37 @@
+---
+- hosts: all
+  become: true 
+
+  pre_tasks:
+    - name: Update apt cache if needed.
+      apt: update_cache=true cache_valid_time=3600
+
+  handlers:
+    - name: restart fail2ban
+      service: name=fail2ban state=restarted
+
+  tasks:
+    - name: Install fail2ban
+      apt: name=fail2ban state=present
+
+    - name: Copy configurations files
+      ansible.builtin.copy:
+        src: /etc/fail2ban/fail2ban.local
+        dest: /etc/fail2ban/fail2ban.local
+        owner: root
+        group: root
+        mode: '0644'
+        
+    - name: Copy configurations files
+      ansible.builtin.copy:
+        src: /etc/fail2ban/jail.local
+        dest: /etc/fail2ban/jail.local
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Restart fail2ban
+      service: name=fail2ban state=restarted
+
+    - name: Ensure fail2ban is started and enabled at boot.
+      service: name=fail2ban state=started enabled=yes
